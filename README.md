@@ -10,7 +10,7 @@
 
 # Mantis
 
-   Mantis is an open-source swift library that provides rich cropping interactions for your iOS/Mac app.
+   Mantis is an open-source swift library that provides rich cropping interactions for your iOS/Mac app (Catalyst only).
    
 <p align="center">
     <img src="Images/Mantis on all devices.png" height="400" alt="Mantis" />
@@ -21,9 +21,8 @@
     <img src="Images/cropshapes.png" height="450" alt="Mantis" />
 </p>
 
-
 ## Requirements
-* iOS 11.0+
+* iOS 13.0+
 * MacOS 10.15+
 * Xcode 10.0+
 
@@ -33,7 +32,7 @@
     <summary><strong>CocoaPods</strong></summary>
 
 ```ruby
-pod 'Mantis', '~> 1.7.1'
+pod 'Mantis', '~> 1.9.0'
 ```
 </details>
 
@@ -49,7 +48,7 @@ github "guoyingtao/Mantis"
  <summary><strong>Swift Packages</strong></summary>
 
 * Respository: https://github.com/guoyingtao/Mantis.git
-* Rules: Version - Exact - 1.6.2
+* Rules: Version - Exact - 1.9.0
 
 </details>
 
@@ -71,7 +70,7 @@ github "guoyingtao/Mantis"
 * The caller needs to conform CropViewControllerDelegate
 ```swift
 public protocol CropViewControllerDelegate: class {
-    func cropViewControllerDidCrop(_ cropViewController: CropViewController, cropped: UIImage, transformation: Transformation)
+    func cropViewControllerDidCrop(_ cropViewController: CropViewController, cropped: UIImage, transformation: Transformation, cropInfo: CropInfo)
     func cropViewControllerDidCancel(_ cropViewController: CropViewController, original: UIImage)
     
     // The implementaion of the following functions are optional
@@ -183,8 +182,54 @@ public enum PresetTransformationType {
     case presetNormalizedInfo(normailizedInfo: CGRect)
 }
 ```
-Please use the transformation infomation obtained previously from delegate method cropViewControllerDidCrop(_ cropViewController: CropViewController, cropped: UIImage, transformation: Transformation).
+Please use the transformation infomation obtained previously from delegate method cropViewControllerDidCrop(_ cropViewController: CropViewController, cropped: UIImage, transformation: Transformation, , cropInfo: CropInfo).
 
+</details>
+                
+<details>
+    <summary><strong>Localization</strong></summary>
+    
+* UIKit project    
+    Add more languages support to the Localizaions section for Project Info tab 
+    
+<p align="center">
+    <img src="https://user-images.githubusercontent.com/26723384/128650945-5a1da648-7e7d-4faf-9c95-232725b05dcc.png" height="200" alt="Mantis" />
+    <br>fig 1</br>
+</p>
+    
+* SwiftUI project    
+    Please check this [link](https://github.com/guoyingtao/Mantis/discussions/123#discussioncomment-1127611)
+
+* Static frameworks
+    If you use static frameworks in CocoaPods, you need to add the code below in order to find the correct resource bundle.
+    
+```
+    Mantis.locateResourceBundle(by: Self.self)
+```
+  
+* Custom localization tables and bundle
+    
+By default mantis will use built in localization tables to get string resources not every language is supported out of the box (see fig 1).
+    
+However if your app support multiple languages and those languages are not 'built in', then you can define your own strings table and localize them in the application target or framework. By doing so you'll need to configure Mantis localization.
+
+**IMPORTANT!** Firstly you'll need to create strings file with these keys:
+
+```
+"Mantis.Done" = "";
+"Mantis.Cancel" = "";
+"Mantis.Reset" = "";
+"Mantis.Original" = "";
+"Mantis.Square" = "";
+```
+Then you'll need to configure Mantis:
+
+```
+let config = Mantis.Config()
+config.localizationConfig.bundle = // a bundle where strings file is located
+config.localizationConfig.tableName = // a localizaed strings file name within the bundle
+```
+  
 </details>
     
 ### Demo projects

@@ -2,6 +2,55 @@
 
 -----
 
+## [1.9.0](https://www.github.com/guoyingtao/Mantis/compare/v1.8.0...v1.9.0) (2022-01-14)
+
+
+### Features
+
+* expose CropInfo in cropViewControllerDidCrop ([#157](https://www.github.com/guoyingtao/Mantis/issues/157)) ([a0e3f39](https://www.github.com/guoyingtao/Mantis/commit/a0e3f39c546a1852c32bb3677be562fc194748b8))
+
+
+### Bug Fixes
+
+* exclude Info.plist in Package file ([4c5de48](https://www.github.com/guoyingtao/Mantis/commit/4c5de486e0f6d1b9cc37c4ae52b87d64f79aed8f))
+
+## [1.8.0](https://www.github.com/guoyingtao/Mantis/compare/v1.7.5...v1.8.0) (2021-11-16)
+
+
+### Features
+
+* added support to set the rotation limits ([#148](https://www.github.com/guoyingtao/Mantis/issues/148)) ([8feece0](https://www.github.com/guoyingtao/Mantis/commit/8feece05a23c66240bde446ffaea13f2e0dfe4ae))
+
+### [1.7.5](https://www.github.com/guoyingtao/Mantis/compare/v1.7.4...v1.7.5) (2021-11-06)
+
+
+### Bug Fixes
+
+* solve SPM localization issue ([#145](https://www.github.com/guoyingtao/Mantis/issues/145)) ([8dedb8b](https://www.github.com/guoyingtao/Mantis/commit/8dedb8be2e58874fdf0da0dacd227dc4cec97e22))
+
+### [1.7.4](https://www.github.com/guoyingtao/Mantis/compare/v1.7.3...v1.7.4) (2021-11-05)
+
+
+### Bug Fixes
+
+* support static lib localization ([#141](https://www.github.com/guoyingtao/Mantis/issues/141)) ([#142](https://www.github.com/guoyingtao/Mantis/issues/142)) ([fd2de0f](https://www.github.com/guoyingtao/Mantis/commit/fd2de0f69ce5c0695b40b32b4ee9e76250a7a58d))
+
+### [1.7.3](https://www.github.com/guoyingtao/Mantis/compare/v1.7.2...v1.7.3) (2021-10-27)
+
+
+### Bug Fixes
+
+* delete a blank row ([d1506e1](https://www.github.com/guoyingtao/Mantis/commit/d1506e1d5f899114607d5fef0e73dfb0d43363d0))
+* fix a code missing problem by bumping version ([1a65bec](https://www.github.com/guoyingtao/Mantis/commit/1a65becf4037fc12bd3af7fe374590d3b57896ee))
+
+### [1.7.2](https://www.github.com/guoyingtao/Mantis/compare/v1.7.1...v1.7.2) (2021-08-11)
+
+
+### Bug Fixes
+
+* fix the wrong mask rounded rectangle value ([#124](https://www.github.com/guoyingtao/Mantis/issues/124)) ([33a8865](https://www.github.com/guoyingtao/Mantis/commit/33a8865f61f2f0dc0811ebd508ef23791ad91693))
+* solve the SwiftLint errors ([#126](https://www.github.com/guoyingtao/Mantis/issues/126)) ([5e147aa](https://www.github.com/guoyingtao/Mantis/commit/5e147aa19785b57a6e5af89d098c30e39438ea51))
+
 ### [1.7.1](https://www.github.com/guoyingtao/Mantis/compare/v1.7.0...v1.7.1) (2021-05-02)
 
 

@@ -49,8 +49,7 @@ class ViewController: UIViewController, CropViewControllerDelegate {
         }
         
         var config = Mantis.Config()
-        
-        
+                
         let transform = Transformation(offset: CGPoint(x: 231.66666666666666, y: 439.6666666666667),
                                        rotation: 0.5929909348487854,
                                        scale: 2.841958076098717,
@@ -58,8 +57,7 @@ class ViewController: UIViewController, CropViewControllerDelegate {
                                        intialMaskFrame: CGRect(x: 14.0, y: 62.25, width: 347.0, height: 520.5),
                                        maskFrame: CGRect(x: 59.47694524495677, y: 14.0, width: 256.04610951008647, height: 617.0),
                                        scrollBounds: CGRect(x: 231.66666666666666, y: 439.6666666666667, width: 557.1387432741491, height: 654.7511809035641))
-        
-        
+                
         config.presetTransformationType = .presetInfo(info: transform)
         
         let cropViewController = Mantis.cropViewController(image: image,
@@ -118,8 +116,6 @@ class ViewController: UIViewController, CropViewControllerDelegate {
         
     }
     
-    
-    
     @IBAction func customizedCropToolbarWithoutListButtonTouched(_ sender: Any) {
         guard let image = image else {
             return
@@ -140,14 +136,13 @@ class ViewController: UIViewController, CropViewControllerDelegate {
         
     }
     
-    
     @IBAction func clockwiseRotationButtonTouched(_ sender: Any) {
         guard let image = image else {
             return
         }
         
         var config = Mantis.Config()
-        config.cropToolbarConfig.toolbarButtonOptions = [.clockwiseRotate, .reset, .ratio, .alterCropper90Degree];
+        config.cropToolbarConfig.toolbarButtonOptions = [.clockwiseRotate, .reset, .ratio, .alterCropper90Degree]
         
         let cropViewController = Mantis.cropViewController(image: image,
                                                            config: config)
@@ -237,18 +232,22 @@ class ViewController: UIViewController, CropViewControllerDelegate {
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if let nc = segue.destination as? UINavigationController,
-           let vc = nc.viewControllers.first as? EmbeddedCropViewController {
-            vc.image = image
-            vc.didGetCroppedImage = {[weak self] image in
+        if let navigationController = segue.destination as? UINavigationController,
+           let embeddedCropViewController = navigationController.viewControllers.first as? EmbeddedCropViewController {
+            embeddedCropViewController.image = image
+            embeddedCropViewController.didGetCroppedImage = {[weak self] image in
                 self?.croppedImageView.image = image
                 self?.dismiss(animated: true)
             }
         }
     }
     
-    func cropViewControllerDidCrop(_ cropViewController: CropViewController, cropped: UIImage, transformation: Transformation) {
-        print(transformation);
+    func cropViewControllerDidCrop(_ cropViewController: CropViewController,
+                                   cropped: UIImage,
+                                   transformation: Transformation,
+                                   cropInfo: CropInfo) {
+        print("transformation is \(transformation)")
+        print("cropInfo is \(cropInfo)")
         croppedImageView.image = cropped
         self.dismiss(animated: true)
     }

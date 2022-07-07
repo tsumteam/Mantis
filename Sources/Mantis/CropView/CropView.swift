@@ -24,7 +24,7 @@
 
 import UIKit
 
-protocol CropViewDelegate: class {
+protocol CropViewDelegate: AnyObject {
     func cropViewDidBecomeResettable(_ cropView: CropView)
     func cropViewDidBecomeUnResettable(_ cropView: CropView)
     func cropViewDidBeginResize(_ cropView: CropView)
@@ -37,6 +37,9 @@ let hotAreaUnit: CGFloat = 32
 let cropViewPadding:CGFloat = 42.0
 
 class CropView: UIView {
+
+    public var dialConfig = Mantis.Config().dialConfig
+
     var cropShapeType: CropShapeType = .rect
     var cropVisualEffectType: CropVisualEffectType = .blurDark
     var angleDashboardHeight: CGFloat = 60
@@ -63,6 +66,7 @@ class CropView: UIView {
 
     lazy var scrollView = CropScrollView(frame: bounds)
     lazy var cropMaskViewManager = CropMaskViewManager(with: self,
+                                                       cropRatio: CGFloat(getImageRatioH()),
                                                        cropShapeType: cropShapeType,
                                                        cropVisualEffectType: cropVisualEffectType)
 
@@ -75,9 +79,10 @@ class CropView: UIView {
         print("CropView deinit.")
     }
     
-    init(image: UIImage, viewModel: CropViewModel = CropViewModel()) {
+    init(image: UIImage, viewModel: CropViewModel = CropViewModel(), dialConfig: DialConfig = Mantis.Config().dialConfig) {
         self.image = image
         self.viewModel = viewModel
+        self.dialConfig = dialConfig
         
         imageContainer = ImageContainer()
         gridOverlayView = CropOverlayView()
@@ -93,7 +98,13 @@ class CropView: UIView {
         { [unowned self] _, changed in
             guard let cropFrame = changed.newValue else { return }
             self.gridOverlayView.frame = cropFrame
-            self.cropMaskViewManager.adaptMaskTo(match: cropFrame)
+            
+            var cropRatio: CGFloat = 1.0
+            if self.gridOverlayView.frame.height != 0 {
+                cropRatio = self.gridOverlayView.frame.width / self.gridOverlayView.frame.height
+            }
+            
+            self.cropMaskViewManager.adaptMaskTo(match: cropFrame, cropRatio: cropRatio)
         }
         
         initalRender()
@@ -191,7 +202,7 @@ class CropView: UIView {
     
     func resetUIFrame() {
         cropMaskViewManager.removeMaskViews()
-        cropMaskViewManager.setup(in: self)
+        cropMaskViewManager.setup(in: self, cropRatio: CGFloat(getImageRatioH()))
         viewModel.resetCropFrame(by: getInitialCropBoxRect())
                 
         scrollView.transform = .identity
@@ -240,15 +251,9 @@ class CropView: UIView {
         if rotationDial != nil {
             rotationDial?.removeFromSuperview()
         }
-        
-        var config = DialConfig.Config()
-        config.backgroundColor = .clear
-        config.angleShowLimitType = .limit(angle: CGAngle(degrees: 40))
-        config.rotationLimitType = .limit(angle: CGAngle(degrees: 45))
-        config.numberShowSpan = 1
-        
+
         let boardLength = min(bounds.width, bounds.height) * 0.6
-        let rotationDial = RotationDial(frame: CGRect(x: 0, y: 0, width: boardLength, height: angleDashboardHeight), config: config)
+        let rotationDial = RotationDial(frame: CGRect(x: 0, y: 0, width: boardLength, height: angleDashboardHeight), dialConfig: dialConfig)
         self.rotationDial = rotationDial
         rotationDial.isUserInteractionEnabled = true
         addSubview(rotationDial)
@@ -359,8 +364,7 @@ extension CropView {
             return .zero
         }
         
-        let outsideRect = getContentBounds()
-        
+        let outsideRect = getContentBounds()        
         let insideRect: CGRect
         
         if viewModel.isUpOrUpsideDown() {
@@ -547,9 +551,9 @@ extension CropView {
 
 // MARK: - internal API
 extension CropView {
-    func crop(_ image: UIImage) -> (croppedImage: UIImage?, transformation: Transformation) {
+    func crop(_ image: UIImage) -> (croppedImage: UIImage?, transformation: Transformation, cropInfo: CropInfo) {
 
-        let info = getCropInfo()
+        let cropInfo = getCropInfo()
         
         let transformation = Transformation(
             offset: scrollView.contentOffset,
@@ -561,8 +565,8 @@ extension CropView {
             scrollBounds: scrollView.bounds
         )
         
-        guard let croppedImage = image.getCroppedImage(byCropInfo: info) else {
-            return (nil, transformation)
+        guard let croppedImage = image.crop(by: cropInfo) else {
+            return (nil, transformation, cropInfo)
         }
         
         switch cropShapeType {
@@ -574,24 +578,24 @@ extension CropView {
              .diamond(maskOnly: true),
              .heart(maskOnly: true),
              .polygon(_, _, maskOnly: true):
-            return (croppedImage, transformation)
+            return (croppedImage, transformation, cropInfo)
         case .ellipse:
-            return (croppedImage.ellipseMasked, transformation)
+            return (croppedImage.ellipseMasked, transformation, cropInfo)
         case .circle:
-            return (croppedImage.ellipseMasked, transformation)
+            return (croppedImage.ellipseMasked, transformation, cropInfo)
         case .roundedRect(let radiusToShortSide, maskOnly: false):
             let radius = min(croppedImage.size.width, croppedImage.size.height) * radiusToShortSide
-            return (croppedImage.roundRect(radius), transformation)
+            return (croppedImage.roundRect(radius), transformation, cropInfo)
         case .path(let points, maskOnly: false):
-            return (croppedImage.clipPath(points), transformation)
+            return (croppedImage.clipPath(points), transformation, cropInfo)
         case .diamond(maskOnly: false):
             let points = [CGPoint(x: 0.5, y: 0), CGPoint(x: 1, y: 0.5), CGPoint(x: 0.5, y: 1), CGPoint(x: 0, y: 0.5)]
-            return (croppedImage.clipPath(points), transformation)
+            return (croppedImage.clipPath(points), transformation, cropInfo)
         case .heart(maskOnly: false):
-            return (croppedImage.heart, transformation)
+            return (croppedImage.heart, transformation, cropInfo)
         case .polygon(let sides, let offset, maskOnly: false):
-            let points = polygonPointArray(sides: sides, x: 0.5, y: 0.5, radius: 0.5, offset: 90 + offset)
-            return (croppedImage.clipPath(points), transformation)
+            let points = polygonPointArray(sides: sides, originX: 0.5, originY: 0.5, radius: 0.5, offset: 90 + offset)
+            return (croppedImage.clipPath(points), transformation, cropInfo)
         }
     }
     
@@ -618,7 +622,7 @@ extension CropView {
         return forceFixedRatio ? viewModel.radians : viewModel.getTotalRadians()
     }
     
-    func crop() -> (croppedImage: UIImage?, transformation: Transformation) {
+    func crop() -> (croppedImage: UIImage?, transformation: Transformation, cropInfo: CropInfo) {
         return crop(image)
     }
         
@@ -650,7 +654,7 @@ extension CropView {
         }
     }
     
-    func RotateBy90(rotateAngle: CGFloat, completion: @escaping ()->Void = {}) {
+    func rotateBy90(rotateAngle: CGFloat, completion: @escaping ()->Void = {}) {
         viewModel.setDegree90RotatingStatus()
         let rorateDuration = 0.25
         
@@ -662,7 +666,7 @@ extension CropView {
                 self.viewModel.setRotatingStatus(by: angle)
             }) {[weak self] _ in
                 guard let self = self else { return }
-                self.viewModel.RotateBy90(rotateAngle: rotateAngle)
+                self.viewModel.rotateBy90(rotateAngle: rotateAngle)
                 self.viewModel.setBetweenOperationStatus()
                 completion()
             }
@@ -686,7 +690,7 @@ extension CropView {
         }) {[weak self] _ in
             guard let self = self else { return }
             self.scrollView.updateMinZoomScale()
-            self.viewModel.RotateBy90(rotateAngle: rotateAngle)
+            self.viewModel.rotateBy90(rotateAngle: rotateAngle)
             self.viewModel.setBetweenOperationStatus()
             completion()
         }

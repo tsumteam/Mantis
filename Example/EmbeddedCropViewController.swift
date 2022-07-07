@@ -37,16 +37,16 @@ class EmbeddedCropViewController: UIViewController {
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if let vc = segue.destination as? CropViewController {
-            vc.image = image
-            vc.mode = .customizable
-            vc.delegate = self
+        if let cropViewController = segue.destination as? CropViewController {
+            cropViewController.image = image
+            cropViewController.mode = .customizable
+            cropViewController.delegate = self
             
             var config = Mantis.Config()
             config.presetFixedRatioType = .alwaysUsingOnePresetFixedRatio(ratio: 1/2)
-            vc.config = config
+            cropViewController.config = config
             
-            cropViewController = vc
+            self.cropViewController = cropViewController
         }
     }
     
@@ -59,7 +59,10 @@ class EmbeddedCropViewController: UIViewController {
 }
 
 extension EmbeddedCropViewController: CropViewControllerDelegate {
-    func cropViewControllerDidCrop(_ cropViewController: CropViewController, cropped: UIImage, transformation: Transformation) {
+    func cropViewControllerDidCrop(_ cropViewController: CropViewController,
+                                   cropped: UIImage,
+                                   transformation: Transformation,
+                                   cropInfo: CropInfo) {
         self.dismiss(animated: true)
         self.didGetCroppedImage?(cropped)
     }
@@ -73,7 +76,7 @@ extension EmbeddedCropViewController: CropViewControllerDelegate {
     }
     
     func cropViewControllerDidEndResize(_ cropViewController: CropViewController, original: UIImage, cropInfo: CropInfo) {
-        let croppedImage = Mantis.getCroppedImage(byCropInfo: cropInfo, andImage: original)
+        let croppedImage = Mantis.crop(image: original, by: cropInfo)
         self.resolutionLabel.text = getResolution(image: croppedImage)
     }
 
